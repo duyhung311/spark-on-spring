@@ -2,6 +2,8 @@ package com.example.demo.configuration;
 
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.spark.sql.Row;
+import org.apache.spark.sql.SparkSession;
 import org.springframework.beans.factory.annotation.Value;
 import org.apache.spark.SparkConf;
 import org.apache.spark.api.java.JavaSparkContext;
@@ -18,16 +20,10 @@ public class SparkConfig {
     @Value("${spark.master}")
     private String masterUri;
 
-    @Value("${hadoop.home.dir}")
-    private String hadoopHomeDir;
-
-    @Value("${spark.home}")
-    private String sparkHome;
 
     @Bean
     public SparkConf sparkConf() {
         return new SparkConf()
-                .setSparkHome(sparkHome)
                 .setAppName(appName)
                 .setMaster(masterUri);
     }
@@ -37,4 +33,26 @@ public class SparkConfig {
         return new JavaSparkContext(sparkConf());
     }
 
+    @Bean
+    public SparkSession sparkSession() {
+        return SparkSession.builder()
+                .config(sparkConf())
+                .getOrCreate();
+    }
+
+    public static Object get(Row row, int i) {
+        return getOrDefault(row, i, "");
+    }
+
+    public static Object getOrDefault(
+            Row row
+            , int i
+            , Object defaultValue
+    ) {
+        if (row.isNullAt(i)) {
+            return defaultValue;
+        }
+
+        return row.get(i);
+    }
 }

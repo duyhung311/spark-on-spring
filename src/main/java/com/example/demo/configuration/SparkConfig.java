@@ -1,7 +1,10 @@
 package com.example.demo.configuration;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.spark.sql.Row;
 import org.apache.spark.sql.SparkSession;
 import org.springframework.beans.factory.annotation.Value;
@@ -11,8 +14,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@Getter
-@Setter
+@Slf4j
 public class SparkConfig {
 
     @Value("${spark.app.name}")
@@ -20,25 +22,20 @@ public class SparkConfig {
     @Value("${spark.master}")
     private String masterUri;
 
+    @Value("${spark.home}")
+    private String sparkHome;
 
     @Bean
     public SparkConf sparkConf() {
         return new SparkConf()
                 .setAppName(appName)
+                .setSparkHome(sparkHome)
                 .setMaster(masterUri);
     }
 
-    @Bean
-    public JavaSparkContext javaSparkContext() {
-        return new JavaSparkContext(sparkConf());
-    }
 
-    @Bean
-    public SparkSession sparkSession() {
-        return SparkSession.builder()
-                .config(sparkConf())
-                .getOrCreate();
-    }
+
+
 
     public static Object get(Row row, int i) {
         return getOrDefault(row, i, "");
